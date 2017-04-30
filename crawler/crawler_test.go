@@ -9,6 +9,15 @@ import (
 	"testing"
 )
 
+func TestCrawlTopStories(t *testing.T) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, `[ 14223020, 14222823, 14219760, 14221229, 14223129, 14221848 ]`)
+	}))
+	defer testServer.Close()
+
+	CrawlTopStories(testServer.URL)
+}
+
 func TestQueryIDs(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, `[ 14223020, 14222823, 14219760, 14221229, 14223129, 14221848 ]`)
