@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 )
@@ -23,32 +23,44 @@ type Story struct {
 	URL         string `json:"url"`
 }
 
-const topStoryCount = 500
+const storyCountLimit = 500
 
-// CrawlTopStories TODO
-func CrawlTopStories(hostname string) {
-	topStoryIDs := queryIDs(hostname + "/v0/topstories.json")
+// CrawlTopStories retrieves the top 500 Hacker News articles and retrieves
+// their Story information. This is presented in HTML.
+func CrawlTopStories(maxStoryCount int, hostname string, logger *log.Logger) []*Story {
+	start := time.Now()
+	topStoryIDs := queryIDs(maxStoryCount, hostname+"/v0/topstories.json")
 
-	storyChan := make(chan *Story, topStoryCount)
-	go func(storyCh chan<- *Story) {
-		for _, topStoryID := range *topStoryIDs {
-			// fmt.Println("query prepared")
-			storyCh <- queryStory("https://hacker-news.firebaseio.com/v0/item/" + strconv.Itoa(topStoryID) + ".json?print=pretty")
-			// fmt.Println("que ry sent")
-			time.Sleep(500 * time.Millisecond)
+	storyChan := make(chan *Story, len(topStoryIDs))
+	go func(ids []int, storyCh chan<- *Story) {
+		for _, topStoryID := range ids {
+			storyCh <- queryStory(hostname + "/v0/item/" + strconv.Itoa(topStoryID) + ".json")
+			time.Sleep(50 * time.Millisecond)
 		}
 		close(storyChan)
-	}(storyChan)
+	}(topStoryIDs, storyChan)
 
+	var topStories []*Story
 	for story := range storyChan {
-		fmt.Println(story)
+		topStories = append(topStories, story)
 	}
+
+	logger.Printf("Querying stories took '%v'", time.Since(start))
+
+	return topStories
 }
 
-func queryIDs(url string) *[]int {
-	ids := make([]int, topStoryCount)
+func queryIDs(maxStoryCount int, url string) []int {
+	var count int
+	if maxStoryCount < storyCountLimit {
+		count = maxStoryCount
+	} else {
+		count = storyCountLimit
+	}
+
+	ids := make([]int, count)
 	query(url, &ids)
-	return &ids
+	return ids
 }
 
 func queryStory(url string) *Story {
@@ -76,6 +88,5 @@ func query(url string, result interface{}) *interface{} {
 func check(err error) {
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
 	}
 }
