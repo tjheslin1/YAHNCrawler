@@ -31,11 +31,14 @@ func check(err error) {
 const storyHTMLTemplate = `
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <title>{{.Title}}</title>
-</head>
-<body>
-    {{range .Stories}}<div>{{ .By }}</div><br />{{else}}<div><strong>no rows</strong></div>{{end}}
-</body>
+	<head>
+		<meta charset="UTF-8">
+		<title>{{.Title}}</title>
+	</head>
+	<body>
+		{{range .Stories}}<div>
+			<h1><a href="{{ .URL }}">{{ .Title}}</a></h1>
+			<h2><i>by: </i>{{ .By }}, <i>score: </i>{{ .Score }}</h2>
+		</div>{{else}}<div><strong>Nothing to show!</strong></div>{{end}}
+	</body>
 </html>`
