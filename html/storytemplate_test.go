@@ -3,7 +3,6 @@ package html
 import (
 	"bytes"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/tjheslin1/YAHNCrawler/crawler"
@@ -19,15 +18,13 @@ func TestGenerateHTML(t *testing.T) {
 	GenerateHTML(storiesContext, output)
 
 	actual := string(output.Bytes())
-	if actual != expectedOuput {
-		fmt.Printf("Expected '%v'\nto equal\n'%v'\n", actual, expectedOuput)
+	if actual != expectedOutput {
+		fmt.Printf("Expected '%v'\nto equal\n'%v'\n", actual, expectedOutput)
 		t.Fail()
 	}
 }
 
-// string compare issue
 func TestNoStoriesGenerateHTML(t *testing.T) {
-	t.SkipNow()
 	storiesContext := StoriesContext{
 		Title:   "TestTitle",
 		Stories: []*crawler.Story{},
@@ -38,16 +35,13 @@ func TestNoStoriesGenerateHTML(t *testing.T) {
 
 	actual := string(output.Bytes())
 
-	fmt.Printf("ACTUAL:\n'%v'\n", actual)
-	fmt.Printf("EXPECTED:\n'%v'\n", expectedOuputNoStories)
-
-	if strings.Compare(actual, expectedOuputNoStories) != 0 {
-		fmt.Printf("Expected '%v'\nto equal\n'%v'\n", actual, expectedOuputNoStories)
+	if actual != expectedOutputNoStories {
+		fmt.Printf("Expected '%v'\nto equal\n'%v'\n", actual, expectedOutputNoStories)
 		t.Fail()
 	}
 }
 
-const expectedOuput string = `
+const expectedOutput string = `
 <!DOCTYPE html>
 <html>
 	<head>
@@ -62,7 +56,7 @@ const expectedOuput string = `
 	</body>
 </html>`
 
-const expectedOuputNoStories string = `
+const expectedOutputNoStories string = `
 <!DOCTYPE html>
 <html>
 	<head>
