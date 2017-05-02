@@ -22,7 +22,7 @@ func TestGenerateHTML(t *testing.T) {
     <title>TestTitle</title>
 </head>
 <body>
-    <div>prostoalex</div>
+    <div>prostoalex</div><br />
 </body>
 </html>`
 

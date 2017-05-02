@@ -7,6 +7,7 @@ import (
 	"github.com/tjheslin1/YAHNCrawler/crawler"
 )
 
+// StoriesContext TODO
 type StoriesContext struct {
 	Title   string
 	Stories []*crawler.Story
@@ -35,6 +36,6 @@ const storyHTMLTemplate = `
     <title>{{.Title}}</title>
 </head>
 <body>
-    {{range .Stories}}<div>{{ .By }}</div>{{else}}<div><strong>no rows</strong></div>{{end}}
+    {{range .Stories}}<div>{{ .By }}</div><br />{{else}}<div><strong>no rows</strong></div>{{end}}
 </body>
 </html>`

@@ -13,7 +13,7 @@ func main() {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	fmt.Println("Yet Another Hacker News Crawler!")
-	stories := crawler.CrawlTopStories("https://hacker-news.firebaseio.com", logger)
+	stories := crawler.CrawlTopStories(10, "https://hacker-news.firebaseio.com", logger)
 
 	storyContext := html.StoriesContext{
 		Title:   "Hacker News crawler",

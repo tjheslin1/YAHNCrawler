@@ -58,9 +58,9 @@ func queryIDs(maxStoryCount int, url string) []int {
 		count = storyCountLimit
 	}
 
-	ids := make([]int, count)
+	ids := make([]int, storyCountLimit)
 	query(url, &ids)
-	return ids
+	return ids[0:count]
 }
 
 func queryStory(url string) *Story {

@@ -8,20 +8,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"regexp"
+	"strconv"
 	"testing"
 )
 
 func TestCrawlTopStories(t *testing.T) {
-	/*
-		serveMux := http.NewServeMux()
-		serveMux.Handle("/v0/topstories.json", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, `[ 14223020 ]`)
-		}))
-
-		serveMux.Handle("/v0/item/14223020.json", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, storyToJSON(exampleStory))
-		}))
-	*/
 	testServer := setUpTestServer([]int{14223020})
 	defer testServer.Close()
 
@@ -38,10 +30,36 @@ func TestCrawlTopStories(t *testing.T) {
 		fmt.Printf("Expected \n'%v'\nto equal\n'%v'\n", topStories[0], exampleStory)
 		t.Fail()
 	}
+
+	logMessageRegexp := "[0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} Querying stories took '.*ms"
+	matched, err := regexp.Match(logMessageRegexp, logOutput.Bytes())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !matched {
+		t.Errorf("logOutput '%v'did not match regexp:\n'%v'\n", string(logOutput.Bytes()), logMessageRegexp)
+	}
 }
 
-func TestCrawlTopStoriesRetrieveCount(t *testing.T) {
+func TestCrawlRetrievesSpecifiedNumberOfStories(t *testing.T) {
+	testServer := setUpTestServer([]int{14223020, 14222823, 14219760, 14221229, 14223129, 14221848})
+	defer testServer.Close()
 
+	logOutput := new(bytes.Buffer)
+	logger := log.New(logOutput, "", log.Ldate|log.Ltime)
+
+	topStories := CrawlTopStories(3, testServer.URL, logger)
+
+	if len(topStories) != 3 {
+		fmt.Printf("Expected '3' story to be returned but got '%v'\n", len(topStories))
+	}
+
+	if !reflect.DeepEqual(*topStories[0], exampleStory) {
+		fmt.Printf("Expected Top Story: \n'%v'\nto equal\n'%v'\n", topStories[0], exampleStory)
+		t.Fail()
+	}
 }
 
 func TestQueryIDs(t *testing.T) {
@@ -81,8 +99,8 @@ func setUpTestServer(storyIDs []int) *httptest.Server {
 		fmt.Fprintln(w, idsToJSON(storyIDs))
 	}))
 
-	for storyID := range storyIDs {
-		serveMux.Handle("/v0/item/"+string(storyID)+".json", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	for _, storyID := range storyIDs {
+		serveMux.Handle("/v0/item/"+strconv.Itoa(storyID)+".json", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintln(w, storyToJSON(exampleStory))
 		}))
 	}
